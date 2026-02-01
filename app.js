@@ -2,7 +2,6 @@ let songs = [];
 let songIndex = 0;
 let currentSong = null;
 let isPlaying = false;
-let songStarted = false;
 let embedController = null;
 let IFrameAPI = null;
 
@@ -45,13 +44,7 @@ function togglePlay() {
     if (isPlaying) {
       embedController.pause();
     } else {
-      if (!songStarted && currentSong) {
-        embedController.loadUri(`spotify:track:${currentSong.id}`, { startAt: 0 });
-        embedController.play();
-        songStarted = true;
-      } else {
-        embedController.resume();
-      }
+      embedController.play();
     }
   }
 }
@@ -148,22 +141,11 @@ function drawCard() {
 
   currentSong = songs[songIndex];
   songIndex++;
-  songStarted = false;
   applyBingoColor();
 
   document.getElementById("playedCount").textContent = songIndex;
+  isPlaying = false;
   updateCardContent(true); // Show guessing state (not revealed)
-
-  // Start playback (in user gesture context) - wrapped in try/catch so UI always works
-  try {
-    if (embedController) {
-      embedController.play();
-      isPlaying = true;
-      updatePlayBtn();
-    }
-  } catch (e) {
-    console.error('Playback error:', e);
-  }
 
   document.getElementById("drawBtn").classList.add("hidden");
   document.getElementById("revealBtn").classList.remove("hidden");
@@ -183,22 +165,19 @@ function nextSong() {
 
   currentSong = songs[songIndex];
   songIndex++;
-  songStarted = false;
   applyBingoColor();
 
   document.getElementById("playedCount").textContent = songIndex;
+  isPlaying = false;
   updateCardContent(true); // Show guessing state
 
-  // Load new track and play (in user gesture context) - wrapped in try/catch
+  // Load new track (don't auto-play, user must press play)
   try {
     if (embedController) {
       embedController.loadUri(`spotify:track:${currentSong.id}`);
-      embedController.play();
-      isPlaying = true;
-      updatePlayBtn();
     }
   } catch (e) {
-    console.error('Load/play error:', e);
+    console.error('Load error:', e);
   }
 
   document.getElementById("drawBtn").classList.add("hidden");
