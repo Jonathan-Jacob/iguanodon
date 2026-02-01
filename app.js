@@ -2,6 +2,7 @@ let songs = [];
 let songIndex = 0;
 let currentSong = null;
 let isPlaying = false;
+let songStarted = false;
 let embedController = null;
 let IFrameAPI = null;
 
@@ -44,6 +45,10 @@ function togglePlay() {
     if (isPlaying) {
       embedController.pause();
     } else {
+      if (!songStarted) {
+        embedController.seek(0);
+        songStarted = true;
+      }
       embedController.resume();
     }
   }
@@ -141,6 +146,7 @@ function drawCard() {
 
   currentSong = songs[songIndex];
   songIndex++;
+  songStarted = false;
   applyBingoColor();
 
   document.getElementById("playedCount").textContent = songIndex;
@@ -175,6 +181,7 @@ function nextSong() {
 
   currentSong = songs[songIndex];
   songIndex++;
+  songStarted = false;
   applyBingoColor();
 
   document.getElementById("playedCount").textContent = songIndex;
@@ -184,7 +191,6 @@ function nextSong() {
   try {
     if (embedController) {
       embedController.loadUri(`spotify:track:${currentSong.id}`);
-      embedController.seek(0);
       embedController.play();
       isPlaying = true;
       updatePlayBtn();
