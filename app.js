@@ -184,6 +184,7 @@ function nextSong() {
   try {
     if (embedController) {
       embedController.loadUri(`spotify:track:${currentSong.id}`);
+      embedController.seek(0);
       embedController.play();
       isPlaying = true;
       updatePlayBtn();
