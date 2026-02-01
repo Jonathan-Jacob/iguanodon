@@ -43,9 +43,12 @@ function togglePlay() {
   if (embedController) {
     if (isPlaying) {
       embedController.pause();
+      isPlaying = false;
     } else {
       embedController.play();
+      isPlaying = true;
     }
+    updatePlayBtn();
   }
 }
 
@@ -120,10 +123,6 @@ function selectSet(set) {
       width: '100%'
     }, (controller) => {
       embedController = controller;
-      controller.addListener('playback_update', (e) => {
-        isPlaying = !e.data.isPaused;
-        updatePlayBtn();
-      });
     });
   }
 }
@@ -171,13 +170,14 @@ function nextSong() {
   isPlaying = false;
   updateCardContent(true); // Show guessing state
 
-  // Pause any running playback
+  // Load new track and pause
   try {
     if (embedController) {
+      embedController.loadUri(`spotify:track:${currentSong.id}`);
       embedController.pause();
     }
   } catch (e) {
-    console.error('Pause error:', e);
+    console.error('Load/pause error:', e);
   }
 
   document.getElementById("drawBtn").classList.add("hidden");
