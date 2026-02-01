@@ -2,6 +2,7 @@ let songs = [];
 let songIndex = 0;
 let currentSong = null;
 let isPlaying = false;
+let songFresh = true;
 let embedController = null;
 let IFrameAPI = null;
 
@@ -44,6 +45,11 @@ function togglePlay() {
     if (isPlaying) {
       embedController.pause();
     } else {
+      if (songFresh && currentSong) {
+        // Reload track fresh to ensure it starts from beginning
+        embedController.loadUri(`spotify:track:${currentSong.id}`);
+        songFresh = false;
+      }
       embedController.play();
     }
   }
@@ -141,6 +147,7 @@ function drawCard() {
 
   currentSong = songs[songIndex];
   songIndex++;
+  songFresh = true;
   applyBingoColor();
 
   document.getElementById("playedCount").textContent = songIndex;
@@ -165,19 +172,20 @@ function nextSong() {
 
   currentSong = songs[songIndex];
   songIndex++;
+  songFresh = true;
   applyBingoColor();
 
   document.getElementById("playedCount").textContent = songIndex;
   isPlaying = false;
   updateCardContent(true); // Show guessing state
 
-  // Load new track (don't auto-play, user must press play)
+  // Pause any running playback
   try {
     if (embedController) {
-      embedController.loadUri(`spotify:track:${currentSong.id}`);
+      embedController.pause();
     }
   } catch (e) {
-    console.error('Load error:', e);
+    console.error('Pause error:', e);
   }
 
   document.getElementById("drawBtn").classList.add("hidden");
