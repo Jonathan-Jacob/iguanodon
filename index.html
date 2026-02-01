@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iguanodon.space</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+@font-face {
+  font-family: 'Fredoka';
+  src: url('fonts/fredoka.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Outfit';
+  src: url('fonts/outfit-variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: inherit; }
+:root {
+  --bg-dark: #0f0a1a;
+  --bg-card: #1e1432;
+  --bg-card-hover: #2d1f4a;
+  --accent: #e040fb;
+  --accent-hover: #ea80fc;
+  --accent-glow: rgba(224, 64, 251, 0.5);
+  --accent-secondary: #00e5ff;
+  --text-primary: #ffffff;
+  --text-secondary: #d4b8ff;
+  --text-muted: #9d7aff;
+  --success: #6bcb77;
+  --border: rgba(224, 64, 251, 0.3);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --rainbow: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #e040fb);
+}
+body {
+  font-family: 'Outfit', sans-serif;
+  background: linear-gradient(145deg, #0f0a1a 0%, #1a0a2e 50%, #0a1a2e 100%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+.app {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.header { text-align: center; margin-bottom: 40px; }
+.mascot { width: 80px; height: 80px; margin: 0 auto 12px; }
+.mascot svg { width: 100%; height: 100%; filter: drop-shadow(0 0 15px rgba(107, 203, 119, 0.5)); }
+.logo {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 25%, #6bcb77 50%, #4d96ff 75%, #e040fb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 40px rgba(224, 64, 251, 0.3);
+  letter-spacing: 2px;
+}
+.tagline { color: var(--text-secondary); font-size: 1.2rem; margin-top: 8px; font-weight: 500; letter-spacing: 1px; }
+.set-selection h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+.set-buttons { display: flex; flex-direction: column; gap: 12px; }
+.set-btn {
+  background: var(--bg-card);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.3s ease;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 4px 16px;
+  position: relative;
+  background-clip: padding-box;
+}
+.set-btn::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius) + 2px);
+  background: linear-gradient(135deg, #ff6b6b33, #ffd93d33, #6bcb7733, #4d96ff33, #e040fb33);
+  z-index: -1;
+  transition: all 0.3s ease;
+}
+.set-btn:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 40px rgba(224, 64, 251, 0.3);
+}
+.set-btn:hover::before {
+  background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #e040fb);
+}
+.set-btn:hover .set-name,
+.set-btn:hover .set-desc {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+.set-icon { font-size: 2.5rem; grid-row: span 2; display: flex; align-items: center; filter: drop-shadow(0 0 10px rgba(255, 217, 61, 0.4)); }
+.set-name { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); letter-spacing: 0.5px; }
+.set-desc { font-size: 0.9rem; color: var(--text-secondary); }
+.game-area { flex: 1; display: flex; flex-direction: column; }
+.game-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.back-btn {
+  font-family: inherit;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+.back-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+}
+.set-label {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+}
+.player-container {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+.player-container::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius) + 2px);
+  background: linear-gradient(135deg, #e040fb, #4d96ff, #6bcb77, #ffd93d);
+  z-index: -1;
+}
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  gap: 8px;
+  padding: 40px;
+}
+.empty-state p:last-child {
+  font-size: 1rem;
+}
+.empty-icon { font-size: 3rem; opacity: 0.6; }
+.card-wrapper { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+#cardContent {
+  position: absolute;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+#embedContainer, #embedContainerA, #embedContainerB {
+  z-index: 1;
+  position: absolute;
+}
+.card-guessing,
+.card-answer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  padding-bottom: 80px;
+  text-align: center;
+  background: var(--bg-card);
+  position: relative;
+}
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.guessing-icon {
+  font-size: 4.5rem;
+  margin-bottom: 12px;
+  animation: bounce 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(224, 64, 251, 0.5));
+}
+@keyframes bounce {
+  0%, 100% { transform: scale(1) rotate(-5deg); }
+  50% { transform: scale(1.15) rotate(5deg); }
+}
+.guessing-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #e040fb, #4d96ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+}
+.guessing-hint {
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.song-year {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 50%, #6bcb77 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 8px;
+  text-shadow: 0 0 40px rgba(255, 217, 61, 0.3);
+}
+.song-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+.song-artist {
+  font-size: 0.95rem;
+  color: var(--accent-secondary);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.song-genre {
+  font-size: 0.75rem;
+  color: var(--bg-dark);
+  text-transform: capitalize;
+  background: linear-gradient(90deg, #ffd93d, #ff6b6b);
+  padding: 5px 14px;
+  border-radius: 20px;
+  display: inline-block;
+  font-weight: 600;
+}
+.controls { display: flex; gap: 12px; margin-top: 20px; position: relative; z-index: 10; }
+.btn {
+  flex: 1;
+  padding: 16px 24px;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  position: relative;
+  z-index: 1;
+}
+.btn-primary { background: linear-gradient(135deg, #e040fb 0%, #7c4dff 100%) border-box; color: white; font-weight: 600; border: 2px solid transparent; }
+.btn-primary:hover { background: linear-gradient(135deg, #ea80fc 0%, #b388ff 100%) border-box; transform: scale(1.03); box-shadow: 0 6px 20px var(--accent-glow); }
+.btn-secondary { background: linear-gradient(135deg, #6bcb77 0%, #4d96ff 100%) border-box; color: white; font-weight: 700; border: 2px solid transparent; }
+.btn-secondary:hover { background: linear-gradient(135deg, #7ddc88 0%, #5fa7ff 100%) border-box; transform: scale(1.03); box-shadow: 0 6px 20px rgba(107, 203, 119, 0.4); }
+.btn-ghost { background: var(--bg-card); color: var(--text-primary); border: 2px solid var(--border); font-weight: 600; transition: all 0.2s ease; }
+.btn-ghost:hover { background: var(--bg-card-hover); border-color: var(--accent); transform: scale(1.03); box-shadow: 0 6px 20px rgba(224, 64, 251, 0.2); }
+.stats {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 16px;
+  font-weight: 500;
+}
+.hidden { display: none !important; }
+.bingo-green .player-container { box-shadow: 0 0 20px #39ff14, 0 0 40px #39ff14, 0 0 80px rgba(57, 255, 20, 0.8), 0 0 120px rgba(57, 255, 20, 0.5); }
+.bingo-yellow .player-container { box-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00, 0 0 80px rgba(255, 255, 0, 0.8), 0 0 120px rgba(255, 255, 0, 0.5); }
+.bingo-pink .player-container { box-shadow: 0 0 20px #ff1493, 0 0 40px #ff1493, 0 0 80px rgba(255, 20, 147, 0.8), 0 0 120px rgba(255, 20, 147, 0.5); }
+.bingo-blue .player-container { box-shadow: 0 0 20px #00bfff, 0 0 40px #00bfff, 0 0 80px rgba(0, 191, 255, 0.8), 0 0 120px rgba(0, 191, 255, 0.5); }
+.bingo-purple .player-container { box-shadow: 0 0 20px #bf00ff, 0 0 40px #bf00ff, 0 0 80px rgba(191, 0, 255, 0.8), 0 0 120px rgba(191, 0, 255, 0.5); }
+.bingo-green .player-container::before { background: #39ff14; }
+.bingo-yellow .player-container::before { background: #ffff00; }
+.bingo-pink .player-container::before { background: #ff1493; }
+.bingo-blue .player-container::before { background: #00bfff; }
+.bingo-purple .player-container::before { background: #bf00ff; }
+.play-btn {
+  background: linear-gradient(135deg, #e040fb 0%, #7c4dff 100%);
+  color: white;
+  border: none;
+  padding: 16px 0;
+  width: 120px;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.play-btn:hover {
+  background: linear-gradient(135deg, #ea80fc 0%, #b388ff 100%);
+  transform: translateX(-50%) scale(1.05);
+  box-shadow: 0 8px 30px var(--accent-glow);
+}
+.play-btn:active {
+  transform: translateX(-50%) scale(0.98);
+}
+iframe {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 152px;
+  z-index: 1 !important;
+  pointer-events: none;
+}
+.embed-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 152px;
+  pointer-events: none;
+}
+.embed-visible {
+  width: 100%;
+  border-radius: 0 0 var(--radius) var(--radius);
+  overflow: hidden;
+}
+.embed-visible iframe {
+  position: static;
+  width: 100%;
+  height: 152px;
+  border: none;
+  display: block;
+  pointer-events: auto;
+  z-index: auto;
+}
+.footer {
+  margin-top: auto;
+  padding-top: 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+@media (max-width: 360px) {
+  .logo { font-size: 1.6rem; letter-spacing: 1px; }
+  .tagline { font-size: 1rem; }
+  .mascot { width: 60px; height: 60px; }
+}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="mascot">
+        <svg fill="none" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <linearGradient id="paint0_linear_7_465" gradientUnits="userSpaceOnUse" x1="59.752" x2="59.752" y1="40.695" y2="68.435"><stop offset="0" stop-color="#7ddc88"/><stop offset="1" stop-color="#7ddc88" stop-opacity=".21"/></linearGradient>
+          <path clip-rule="evenodd" d="m10 52.2137c0-2.1115.5073-4.1922 1.4793-6.0667l.1395-.269c3.306-6.3758 9.8894-10.378 17.0713-10.378h3.2775c3.1658 0 6.1446 1.4991 8.031 4.0415l5.6799 7.6557c1.5387 2.0737 4.4949 2.4482 6.5019.8234.7395-.5986 1.498-1.1648 2.2736-1.6983l2.0639 3.5748c.5523.9566 1.7755 1.2843 2.7321.7321.9566-.5523 1.2843-1.7755.732-2.7321l-2.1116-3.6574c3.5048-1.8794 7.2677-3.1545 11.1306-3.8046 0 0-.001 3.0447-.001 4.5649 0 1.1046.8954 2 2 2 1.1045 0 2-.8954 2-2 0-1.6667 0-3.3333 0-5 4.1258-.2389 8.2383.2165 12.2827 1.4075l-2.0148 3.4896c-.5523.9566-.2245 2.1798.7321 2.7321.9566.5522 2.1797.2245 2.732-.7321.7762-1.3444 2.3656-4.1308 2.3656-4.1308.8116.3411 1.6116.7102 2.4153 1.0693.6987.3121 1.4871-.1991 1.4871-.9644 0-4.904-3.3755-9.163-8.15-10.2829l-2.7198-.638c-4.073-.9554-3.3793-6.9503.8043-6.9503h3.5852c7.4264 0 14.3023 3.9177 18.0883 10.3066 6.154 10.3859 6.529 23.2086.992 33.9365-.586 1.1357-1.157 2.2776-1.851 3.3524-1.415-8.2873-8.6328-14.5955-17.3235-14.5955-9.4578 0-16.6162 7.254-17.5008 15.7819-1.2142-6.6019-6.9983-11.7819-14.1603-11.7819-9.2163 0-15.7644 8.5-14.1795 16.9889-5.8868-3.8019-10.5849-10.3326-10.5849-17.5419 0-.2469-.2001-.447-.447-.447h-10.7667c-4.8525 0-8.7863-3.9338-8.7863-8.7863zm21-4.2137c2.2091 0 4-1.7909 4-4s-1.7909-4-4-4-4 1.7909-4 4 1.7909 4 4 4z" fill="#5ba865" fill-rule="evenodd"/>
+          <path clip-rule="evenodd" d="m10 52.2137c0-2.1115.5073-4.1922 1.4793-6.0667l.1395-.269c3.306-6.3758 9.8894-10.378 17.0713-10.378h3.2775c3.1658 0 6.1446 1.4991 8.031 4.0415l5.6799 7.6557c1.5387 2.0737 4.4949 2.4482 6.5019.8234.7395-.5986 1.498-1.1648 2.2736-1.6983l2.0639 3.5748c.5523.9566 1.7755 1.2843 2.7321.7321.9566-.5523 1.2843-1.7755.732-2.7321l-2.1116-3.6574c3.5048-1.8794 7.2677-3.1545 11.1306-3.8046 0 0-.001 3.0447-.001 4.5649 0 1.1046.8954 2 2 2 1.1045 0 2-.8954 2-2 0-1.6667 0-3.3333 0-5 4.1258-.2389 8.2383.2165 12.2827 1.4075l-2.0148 3.4896c-.5523.9566-.2245 2.1798.7321 2.7321.9566.5522 2.1797.2245 2.732-.7321.7762-1.3444 2.3656-4.1308 2.3656-4.1308.8116.3411 1.6116.7102 2.4153 1.0693.6987.3121 1.4871-.1991 1.4871-.9644 0-4.904-3.3755-9.163-8.15-10.2829l-2.7198-.638c-4.073-.9554-3.3793-6.9503.8043-6.9503h3.5852c7.4264 0 14.3023 3.9177 18.0883 10.3066 6.154 10.3859 6.529 23.2086.992 33.9365-.586 1.1357-1.157 2.2776-1.851 3.3524-1.415-8.2873-8.6328-14.5955-17.3235-14.5955-9.4578 0-16.6162 7.254-17.5008 15.7819-1.2142-6.6019-6.9983-11.7819-14.1603-11.7819-9.2163 0-15.7644 8.5-14.1795 16.9889-5.8868-3.8019-10.5849-10.3326-10.5849-17.5419 0-.2469-.2001-.447-.447-.447h-10.7667c-4.8525 0-8.7863-3.9338-8.7863-8.7863zm21-4.2137c2.2091 0 4-1.7909 4-4s-1.7909-4-4-4-4 1.7909-4 4 1.7909 4 4 4z" fill="url(#paint0_linear_7_465)" fill-opacity=".8" fill-rule="evenodd"/>
+          <path d="m72.1627 87h-4.5546l-.5359 3.2666c-.1549.9441-.2868 1.7709-.2868 2.7334 0 2.7614 2.2386 5 5 5h2.5155c-.9572-1.4301-1.5155-3.1499-1.5155-5v-3.5758c0-.8704-.2924-1.6378-.6227-2.4242z" fill="#5ba865"/>
+          <path d="m72.1627 87h-4.5546l-.5359 3.2666c-.1549.9441-.2868 1.7709-.2868 2.7334 0 2.7614 2.2386 5 5 5h2.5155c-.9572-1.4301-1.5155-3.1499-1.5155-5v-3.5758c0-.8704-.2924-1.6378-.6227-2.4242z" fill="url(#paint0_linear_7_465)" fill-opacity=".8"/>
+          <path d="m70.4825 83c-.6487-1.5444-1.1842-3.1122-1.4434-4.7743-.2067 1.5973-.514 3.1852-.7747 4.7743z" fill="#5ba865"/>
+          <path d="m70.4825 83c-.6487-1.5444-1.1842-3.1122-1.4434-4.7743-.2067 1.5973-.514 3.1852-.7747 4.7743z" fill="url(#paint0_linear_7_465)" fill-opacity=".8"/>
+          <path d="m34.6769 79.4805c1.9685 1.7821 4.1652 3.2795 6.5235 4.4572l.4996 4.016c.1494 1.2009-.1666 2.415-.3594 3.5944-.3865 2.3642.1814 4.6347 1.3981 6.4519h-2.516c-3.0833 0-5.4319-2.7636-4.9345-5.8066.2574-1.5747.5806-3.1308.3813-4.7335z" fill="#5ba865"/>
+          <path d="m34.6769 79.4805c1.9685 1.7821 4.1652 3.2795 6.5235 4.4572l.4996 4.016c.1494 1.2009-.1666 2.415-.3594 3.5944-.3865 2.3642.1814 4.6347 1.3981 6.4519h-2.516c-3.0833 0-5.4319-2.7636-4.9345-5.8066.2574-1.5747.5806-3.1308.3813-4.7335z" fill="url(#paint0_linear_7_465)" fill-opacity=".8"/>
+          <path d="m73.9102 80.8316c-3.7578-8.9461 2.812-18.8316 12.5153-18.8316 7.497 0 13.5745 6.0775 13.5745 13.5745v12.4255c0 5.5229-4.4771 10-10 10h-8.2146c-2.7614 0-5-2.2386-5-5v-3.5758c0-1.1536-.2301-2.2955-.6768-3.3591z" fill="#5ba865"/>
+          <path d="m73.9102 80.8316c-3.7578-8.9461 2.812-18.8316 12.5153-18.8316 7.497 0 13.5745 6.0775 13.5745 13.5745v12.4255c0 5.5229-4.4771 10-10 10h-8.2146c-2.7614 0-5-2.2386-5-5v-3.5758c0-1.1536-.2301-2.2955-.6768-3.3591z" fill="url(#paint0_linear_7_465)" fill-opacity=".8"/>
+          <path d="m44.4522 77.6745c-.7713-6.2003 4.0642-11.6745 10.3123-11.6745 6.4108 0 11.2925 5.7479 10.2546 12.0741l-1.8941 11.5449c-.793 4.8333-4.9701 8.381-9.8681 8.381h-3.0342c-3.0834 0-5.4319-2.7636-4.9345-5.8066.2574-1.5747.5806-3.1308.3812-4.7335z" fill="#5ba865"/>
+          <path d="m44.4522 77.6745c-.7713-6.2003 4.0642-11.6745 10.3123-11.6745 6.4108 0 11.2925 5.7479 10.2546 12.0741l-1.8941 11.5449c-.793 4.8333-4.9701 8.381-9.8681 8.381h-3.0342c-3.0834 0-5.4319-2.7636-4.9345-5.8066.2574-1.5747.5806-3.1308.3812-4.7335z" fill="url(#paint0_linear_7_465)" fill-opacity=".8"/>
+        </svg>
+      </div>
+      <h1 class="logo">iguanodon.space</h1>
+      <p class="tagline">Guess the song facts!</p>
+    </header>
+    <section class="set-selection" id="setSelection">
+      <h2>Choose your set</h2>
+      <div class="set-buttons">
+        <button class="set-btn" data-set="standard">
+          <span class="set-icon">🎵</span>
+          <span class="set-name">Standard</span>
+          <span class="set-desc">Pop, Rock, Soul, Electronic & more</span>
+        </button>
+        <button class="set-btn" data-set="rock">
+          <span class="set-icon">🎸</span>
+          <span class="set-name">Rock</span>
+          <span class="set-desc">Classic Rock to Metal & Punk</span>
+        </button>
+        <button class="set-btn" data-set="hiphop">
+          <span class="set-icon">🎤</span>
+          <span class="set-name">Hip Hop</span>
+          <span class="set-desc">Old School to Modern Rap</span>
+        </button>
+      </div>
+    </section>
+    <section class="game-area hidden" id="gameArea">
+      <div class="game-nav">
+        <button class="back-btn" id="backBtn">← Back</button>
+        <span class="set-label" id="setLabel">Standard</span>
+      </div>
+      <div class="player-container" id="playerContainer">
+        <div class="empty-state">
+          <p class="empty-icon">🎵</p>
+          <p>Press "Draw Card" to start</p>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn btn-primary" id="drawBtn">Draw Card</button>
+        <button class="btn btn-secondary hidden" id="revealBtn">Reveal</button>
+        <button class="btn btn-ghost hidden" id="nextBtn">Next Song</button>
+      </div>
+      <div class="stats">
+        <span id="playedCount">0</span> / <span id="totalCount">0</span> songs played
+      </div>
+    </section>
+    <footer class="footer">© JJ, nur der SCF!</footer>
+  </div>
+  <script src="https://open.spotify.com/embed/iframe-api/v1"></script>
+  <script src="songs.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
