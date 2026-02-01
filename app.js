@@ -46,10 +46,11 @@ function togglePlay() {
       embedController.pause();
     } else {
       if (!songStarted) {
-        embedController.seek(0);
+        embedController.restart();
         songStarted = true;
+      } else {
+        embedController.resume();
       }
-      embedController.resume();
     }
   }
 }
