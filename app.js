@@ -45,8 +45,9 @@ function togglePlay() {
     if (isPlaying) {
       embedController.pause();
     } else {
-      if (!songStarted) {
-        embedController.restart();
+      if (!songStarted && currentSong) {
+        embedController.loadUri(`spotify:track:${currentSong.id}`, { startAt: 0 });
+        embedController.play();
         songStarted = true;
       } else {
         embedController.resume();
