@@ -183,6 +183,7 @@ function nextSong() {
   // Load new track and play (in user gesture context) - wrapped in try/catch
   try {
     if (embedController) {
+      embedController.pause();
       embedController.loadUri(`spotify:track:${currentSong.id}`);
       embedController.seek(0);
       embedController.play();
