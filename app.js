@@ -108,7 +108,7 @@ function selectSet(set) {
     '</div>';
 
   document.getElementById("cardContent").innerHTML =
-    '<div class="empty-state"><p class="empty-icon">🎵</p><p>Press "Draw Card" to start</p></div>';
+    '<div class="empty-state"><p class="empty-icon">🎵</p><p>Press "Draw Card" to start</p><p style="margin-top: 16px; font-size: 0.8rem;"><a href="https://open.spotify.com" target="_blank" style="color: var(--accent-secondary);">Log into Spotify</a> for full tracks</p></div>';
 
   document.getElementById("drawBtn").classList.remove("hidden");
   document.getElementById("revealBtn").classList.add("hidden");
