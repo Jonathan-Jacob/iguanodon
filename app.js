@@ -5,6 +5,7 @@ let isPlaying = false;
 let embedController = null;
 let IFrameAPI = null;
 
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 const bingoColors = ['bingo-green', 'bingo-yellow', 'bingo-pink', 'bingo-blue', 'bingo-purple'];
 
 function applyBingoColor() {
@@ -39,8 +40,16 @@ document.getElementById("revealBtn").addEventListener("click", revealSong);
 document.getElementById("nextBtn").addEventListener("click", nextSong);
 document.getElementById("backBtn").addEventListener("click", goBack);
 
+function openInSpotify() {
+  if (currentSong) {
+    window.location.href = `spotify:track:${currentSong.id}`;
+  }
+}
+
 function togglePlay() {
-  if (embedController) {
+  if (isMobile) {
+    openInSpotify();
+  } else if (embedController) {
     if (isPlaying) {
       embedController.pause();
       isPlaying = false;
@@ -55,7 +64,11 @@ function togglePlay() {
 function updatePlayBtn() {
   const btn = document.getElementById("playPauseBtn");
   if (btn) {
-    btn.innerHTML = isPlaying ? '⏸️ Pause' : '▶️ Play';
+    if (isMobile) {
+      btn.innerHTML = '▶️ Open in Spotify';
+    } else {
+      btn.innerHTML = isPlaying ? '⏸️ Pause' : '▶️ Play';
+    }
   }
 }
 
@@ -69,9 +82,9 @@ function updateCardContent(showGuessing) {
         '<div class="card-content">' +
           '<div class="guessing-icon">🎵</div>' +
           '<p class="guessing-title">Ready!</p>' +
-          '<p class="guessing-hint">Press Reveal to play & see the answer</p>' +
+          '<p class="guessing-hint">' + (isMobile ? 'Press button to play in Spotify' : 'Press Reveal to see the answer') + '</p>' +
         '</div>' +
-        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + (isPlaying ? '⏸️ Pause' : '▶️ Play') + '</button>' +
+        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + (isMobile ? '▶️ Open in Spotify' : (isPlaying ? '⏸️ Pause' : '▶️ Play')) + '</button>' +
       '</div>';
   } else {
     const escape = t => { const d = document.createElement("div"); d.textContent = t; return d.innerHTML; };
@@ -83,7 +96,7 @@ function updateCardContent(showGuessing) {
           '<div class="song-artist">' + escape(currentSong.artist) + '</div>' +
           '<div class="song-genre">' + currentSong.genre + '</div>' +
         '</div>' +
-        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + (isPlaying ? '⏸️ Pause' : '▶️ Play') + '</button>' +
+        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + (isMobile ? '▶️ Open in Spotify' : (isPlaying ? '⏸️ Pause' : '▶️ Play')) + '</button>' +
       '</div>';
   }
 }
@@ -104,26 +117,28 @@ function selectSet(set) {
   document.getElementById("playerContainer").innerHTML =
     '<div class="card-wrapper">' +
       '<div id="cardContent"></div>' +
-      '<div id="embedContainer" class="embed-container"></div>' +
+      (isMobile ? '' : '<div id="embedContainer" class="embed-container"></div>') +
     '</div>';
 
   document.getElementById("cardContent").innerHTML =
-    '<div class="empty-state"><p class="empty-icon">🎵</p><p>Press "Draw Card" to start</p><p style="margin-top: 16px; font-size: 0.8rem;"><a href="https://open.spotify.com" target="_blank" style="color: var(--accent-secondary);">Log into Spotify</a> for full tracks</p></div>';
+    '<div class="empty-state"><p class="empty-icon">🎵</p><p>Press "Draw Card" to start</p></div>';
 
   document.getElementById("drawBtn").classList.remove("hidden");
   document.getElementById("revealBtn").classList.add("hidden");
   document.getElementById("nextBtn").classList.add("hidden");
 
-  // Create the controller once with the first song
-  const container = document.getElementById("embedContainer");
-  if (container && IFrameAPI) {
-    IFrameAPI.createController(container, {
-      uri: `spotify:track:${songs[0].id}`,
-      height: 152,
-      width: '100%'
-    }, (controller) => {
-      embedController = controller;
-    });
+  // Desktop only: create the embed controller
+  if (!isMobile) {
+    const container = document.getElementById("embedContainer");
+    if (container && IFrameAPI) {
+      IFrameAPI.createController(container, {
+        uri: `spotify:track:${songs[0].id}`,
+        height: 152,
+        width: '100%'
+      }, (controller) => {
+        embedController = controller;
+      });
+    }
   }
 }
 
@@ -143,8 +158,21 @@ function drawCard() {
   applyBingoColor();
 
   document.getElementById("playedCount").textContent = songIndex;
-  isPlaying = false;
-  updateCardContent(true); // Show guessing state (not revealed)
+
+  // Desktop: autoplay
+  if (!isMobile && embedController) {
+    try {
+      embedController.play();
+      isPlaying = true;
+    } catch (e) {
+      console.error('Playback error:', e);
+      isPlaying = false;
+    }
+  } else {
+    isPlaying = false;
+  }
+
+  updateCardContent(true);
 
   document.getElementById("drawBtn").classList.add("hidden");
   document.getElementById("revealBtn").classList.remove("hidden");
@@ -167,18 +195,22 @@ function nextSong() {
   applyBingoColor();
 
   document.getElementById("playedCount").textContent = songIndex;
-  isPlaying = false;
-  updateCardContent(true); // Show guessing state
 
-  // Load new track and pause
-  try {
-    if (embedController) {
+  // Desktop: load new track and autoplay
+  if (!isMobile && embedController) {
+    try {
       embedController.loadUri(`spotify:track:${currentSong.id}`);
-      embedController.pause();
+      embedController.play();
+      isPlaying = true;
+    } catch (e) {
+      console.error('Load/play error:', e);
+      isPlaying = false;
     }
-  } catch (e) {
-    console.error('Load/pause error:', e);
+  } else {
+    isPlaying = false;
   }
+
+  updateCardContent(true);
 
   document.getElementById("drawBtn").classList.add("hidden");
   document.getElementById("revealBtn").classList.remove("hidden");
@@ -188,7 +220,7 @@ function nextSong() {
 function revealSong() {
   if (!currentSong) return;
 
-  updateCardContent(false); // Show revealed content (song already playing)
+  updateCardContent(false);
 
   document.getElementById("revealBtn").classList.add("hidden");
   document.getElementById("nextBtn").classList.remove("hidden");
