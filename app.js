@@ -116,7 +116,6 @@ function selectSet(set) {
     '<div class="empty-state">' +
       '<p class="empty-icon">🎵</p>' +
       '<p>Press "Draw Card" to start</p>' +
-      (hasFullTracks ? '' : '<p id="loginPrompt" style="margin-top: 16px; font-size: 0.85rem; color: var(--text-muted);">Only hearing previews? <a href="#" onclick="openSpotifyLogin(); return false;" style="color: var(--accent-secondary);">Login to Spotify</a></p>') +
     '</div>';
 
   document.getElementById("drawBtn").classList.remove("hidden");
