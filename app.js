@@ -51,6 +51,9 @@ function togglePlay() {
       embedController.pause();
       isPlaying = false;
     } else {
+      // Call play multiple times to ensure it starts
+      embedController.play();
+      embedController.play();
       embedController.play();
       isPlaying = true;
     }
