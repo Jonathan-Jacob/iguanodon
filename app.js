@@ -45,21 +45,37 @@ document.getElementById("revealBtn").addEventListener("click", revealSong);
 document.getElementById("nextBtn").addEventListener("click", nextSong);
 document.getElementById("backBtn").addEventListener("click", goBack);
 
+let playRetryCount = 0;
+
 function togglePlay() {
   if (embedController) {
     if (isPlaying) {
       embedController.pause();
       isPlaying = false;
+      playRetryCount = 0;
     } else {
-      // Call play multiple times to ensure it starts
-      embedController.play();
-      embedController.play();
-      embedController.play();
-      isPlaying = true;
+      playRetryCount = 0;
+      tryPlay();
     }
     updatePlayBtn();
   }
 }
+
+function tryPlay() {
+  if (!embedController || playRetryCount >= 5) return;
+  playRetryCount++;
+  embedController.play();
+  isPlaying = true;
+  updatePlayBtn();
+  // Check after 300ms if it's actually playing, retry if not
+  setTimeout(() => {
+    if (isPlaying && !actuallyPlaying) {
+      tryPlay();
+    }
+  }, 300);
+}
+
+let actuallyPlaying = false;
 
 function updatePlayBtn() {
   const btn = document.getElementById("playPauseBtn");
@@ -136,6 +152,8 @@ function selectSet(set) {
     }, (controller) => {
       embedController = controller;
       controller.addListener('playback_update', (e) => {
+        // Track actual play state from API
+        actuallyPlaying = !e.data.isPaused;
         // Check track duration to detect if user has full tracks or just previews
         if (e.data.duration > 35000 && !hasFullTracks) {
           hasFullTracks = true;
