@@ -65,8 +65,12 @@ function updatePlayBtn() {
   if (btn) {
     if (isLoading) {
       btn.innerHTML = '⏳ Loading...';
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
     } else {
       btn.innerHTML = isPlaying ? '⏸️ Pause' : '▶️ Play';
+      btn.disabled = false;
+      btn.style.opacity = '1';
     }
   }
 }
@@ -77,6 +81,7 @@ function updateCardContent(showGuessing) {
 
   if (showGuessing) {
     let btnText = isLoading ? '⏳ Loading...' : (isPlaying ? '⏸️ Pause' : '▶️ Play');
+    let btnDisabled = isLoading ? 'disabled style="opacity: 0.6;"' : '';
     cardContent.innerHTML =
       '<div class="card-guessing">' +
         '<div class="card-content">' +
@@ -84,11 +89,12 @@ function updateCardContent(showGuessing) {
           '<p class="guessing-title">Ready!</p>' +
           '<p class="guessing-hint">Press Reveal to see the answer</p>' +
         '</div>' +
-        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + btnText + '</button>' +
+        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()" ' + btnDisabled + '>' + btnText + '</button>' +
       '</div>';
   } else {
     const escape = t => { const d = document.createElement("div"); d.textContent = t; return d.innerHTML; };
     let btnText = isLoading ? '⏳ Loading...' : (isPlaying ? '⏸️ Pause' : '▶️ Play');
+    let btnDisabled = isLoading ? 'disabled style="opacity: 0.6;"' : '';
     cardContent.innerHTML =
       '<div class="card-answer">' +
         '<div class="card-content">' +
@@ -97,7 +103,7 @@ function updateCardContent(showGuessing) {
           '<div class="song-artist">' + escape(currentSong.artist) + '</div>' +
           '<div class="song-genre">' + currentSong.genre + '</div>' +
         '</div>' +
-        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + btnText + '</button>' +
+        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()" ' + btnDisabled + '>' + btnText + '</button>' +
       '</div>';
   }
 }
@@ -141,22 +147,27 @@ function selectSet(set) {
     }, (controller) => {
       embedController = controller;
       controller.addListener('playback_update', (e) => {
-        // Track loading/buffering state
-        if (e.data.isBuffering !== isLoading) {
-          isLoading = e.data.isBuffering;
+        // Track is ready when we have duration and not buffering
+        if (isLoading && e.data.duration > 0 && !e.data.isBuffering) {
+          isLoading = false;
+          updatePlayBtn();
+        }
+        // Track play state
+        const wasPlaying = isPlaying;
+        isPlaying = !e.data.isPaused;
+        if (wasPlaying !== isPlaying) {
           updatePlayBtn();
         }
         // Check track duration to detect if user has full tracks or just previews
         if (e.data.duration > 35000 && !hasFullTracks) {
-          // Duration > 35s means full track, not preview
           hasFullTracks = true;
           hideLoginPrompt();
         }
         // Loop 30s previews when they end
         if (e.data.duration > 0 && e.data.duration <= 35000) {
-          // It's a preview - check if near end
           if (e.data.position >= e.data.duration - 500 && !e.data.isPaused) {
-            // Near end, reload and play to loop
+            isLoading = true;
+            updatePlayBtn();
             embedController.loadUri(`spotify:track:${currentSong.id}`);
             embedController.play();
           }
@@ -189,6 +200,7 @@ function drawCard() {
   document.getElementById("playedCount").textContent = songIndex;
 
   // Desktop: autoplay, Mobile: start paused
+  isLoading = true;
   if (embedController) {
     try {
       if (isMobile) {
@@ -201,9 +213,11 @@ function drawCard() {
     } catch (e) {
       console.error('Playback error:', e);
       isPlaying = false;
+      isLoading = false;
     }
   } else {
     isPlaying = false;
+    isLoading = false;
   }
 
   updateCardContent(true);
