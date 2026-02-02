@@ -146,12 +146,12 @@ function selectSet(set) {
       width: '100%'
     }, (controller) => {
       embedController = controller;
+      // Track is ready when ready event fires
+      controller.addListener('ready', () => {
+        isLoading = false;
+        updatePlayBtn();
+      });
       controller.addListener('playback_update', (e) => {
-        // Track is ready when we have duration and not buffering
-        if (isLoading && e.data.duration > 0 && !e.data.isBuffering) {
-          isLoading = false;
-          updatePlayBtn();
-        }
         // Track play state
         const wasPlaying = isPlaying;
         isPlaying = !e.data.isPaused;
