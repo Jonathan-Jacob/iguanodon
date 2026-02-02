@@ -4,6 +4,7 @@ let currentSong = null;
 let isPlaying = false;
 let embedController = null;
 let IFrameAPI = null;
+let hasFullTracks = false;
 
 const bingoColors = ['bingo-green', 'bingo-yellow', 'bingo-pink', 'bingo-blue', 'bingo-purple'];
 
@@ -115,7 +116,7 @@ function selectSet(set) {
     '<div class="empty-state">' +
       '<p class="empty-icon">🎵</p>' +
       '<p>Press "Draw Card" to start</p>' +
-      '<p style="margin-top: 16px; font-size: 0.85rem; color: var(--text-muted);">Only hearing previews? <a href="#" onclick="openSpotifyLogin(); return false;" style="color: var(--accent-secondary);">Login to Spotify</a></p>' +
+      (hasFullTracks ? '' : '<p id="loginPrompt" style="margin-top: 16px; font-size: 0.85rem; color: var(--text-muted);">Only hearing previews? <a href="#" onclick="openSpotifyLogin(); return false;" style="color: var(--accent-secondary);">Login to Spotify</a></p>') +
     '</div>';
 
   document.getElementById("drawBtn").classList.remove("hidden");
@@ -131,8 +132,21 @@ function selectSet(set) {
       width: '100%'
     }, (controller) => {
       embedController = controller;
+      // Check track duration to detect if user has full tracks or just previews
+      controller.addListener('playback_update', (e) => {
+        if (e.data.duration > 60000 && !hasFullTracks) {
+          // Duration > 60s means full track, not preview
+          hasFullTracks = true;
+          hideLoginPrompt();
+        }
+      });
     });
   }
+}
+
+function hideLoginPrompt() {
+  const prompt = document.getElementById("loginPrompt");
+  if (prompt) prompt.style.display = "none";
 }
 
 function drawCard() {
