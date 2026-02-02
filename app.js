@@ -133,12 +133,21 @@ function selectSet(set) {
       width: '100%'
     }, (controller) => {
       embedController = controller;
-      // Check track duration to detect if user has full tracks or just previews
       controller.addListener('playback_update', (e) => {
+        // Check track duration to detect if user has full tracks or just previews
         if (e.data.duration > 60000 && !hasFullTracks) {
           // Duration > 60s means full track, not preview
           hasFullTracks = true;
           hideLoginPrompt();
+        }
+        // Loop short previews (~30s) when they end
+        if (e.data.duration > 0 && e.data.duration <= 60000) {
+          // It's a preview - check if near end
+          if (e.data.position >= e.data.duration - 500 && !e.data.isPaused) {
+            // Near end, reload and play to loop
+            embedController.loadUri(`spotify:track:${currentSong.id}`);
+            embedController.play();
+          }
         }
       });
     });
