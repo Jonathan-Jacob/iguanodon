@@ -5,7 +5,6 @@ let isPlaying = false;
 let embedController = null;
 let IFrameAPI = null;
 
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 const bingoColors = ['bingo-green', 'bingo-yellow', 'bingo-pink', 'bingo-blue', 'bingo-purple'];
 
 function applyBingoColor() {
@@ -28,6 +27,10 @@ function shuffle(array) {
   return arr;
 }
 
+function openSpotifyLogin() {
+  window.open('https://accounts.spotify.com/login', 'spotify-login', 'width=500,height=700');
+}
+
 window.onSpotifyIframeApiReady = (api) => {
   IFrameAPI = api;
 };
@@ -40,16 +43,8 @@ document.getElementById("revealBtn").addEventListener("click", revealSong);
 document.getElementById("nextBtn").addEventListener("click", nextSong);
 document.getElementById("backBtn").addEventListener("click", goBack);
 
-function openInSpotify() {
-  if (currentSong) {
-    window.location.href = `spotify:track:${currentSong.id}`;
-  }
-}
-
 function togglePlay() {
-  if (isMobile) {
-    openInSpotify();
-  } else if (embedController) {
+  if (embedController) {
     if (isPlaying) {
       embedController.pause();
       isPlaying = false;
@@ -64,11 +59,7 @@ function togglePlay() {
 function updatePlayBtn() {
   const btn = document.getElementById("playPauseBtn");
   if (btn) {
-    if (isMobile) {
-      btn.innerHTML = '▶️ Open in Spotify';
-    } else {
-      btn.innerHTML = isPlaying ? '⏸️ Pause' : '▶️ Play';
-    }
+    btn.innerHTML = isPlaying ? '⏸️ Pause' : '▶️ Play';
   }
 }
 
@@ -82,9 +73,9 @@ function updateCardContent(showGuessing) {
         '<div class="card-content">' +
           '<div class="guessing-icon">🎵</div>' +
           '<p class="guessing-title">Ready!</p>' +
-          '<p class="guessing-hint">' + (isMobile ? 'Press button to play in Spotify' : 'Press Reveal to see the answer') + '</p>' +
+          '<p class="guessing-hint">Press Reveal to see the answer</p>' +
         '</div>' +
-        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + (isMobile ? '▶️ Open in Spotify' : (isPlaying ? '⏸️ Pause' : '▶️ Play')) + '</button>' +
+        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + (isPlaying ? '⏸️ Pause' : '▶️ Play') + '</button>' +
       '</div>';
   } else {
     const escape = t => { const d = document.createElement("div"); d.textContent = t; return d.innerHTML; };
@@ -96,7 +87,7 @@ function updateCardContent(showGuessing) {
           '<div class="song-artist">' + escape(currentSong.artist) + '</div>' +
           '<div class="song-genre">' + currentSong.genre + '</div>' +
         '</div>' +
-        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + (isMobile ? '▶️ Open in Spotify' : (isPlaying ? '⏸️ Pause' : '▶️ Play')) + '</button>' +
+        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + (isPlaying ? '⏸️ Pause' : '▶️ Play') + '</button>' +
       '</div>';
   }
 }
@@ -117,28 +108,30 @@ function selectSet(set) {
   document.getElementById("playerContainer").innerHTML =
     '<div class="card-wrapper">' +
       '<div id="cardContent"></div>' +
-      (isMobile ? '' : '<div id="embedContainer" class="embed-container"></div>') +
+      '<div id="embedContainer" class="embed-container"></div>' +
     '</div>';
 
   document.getElementById("cardContent").innerHTML =
-    '<div class="empty-state"><p class="empty-icon">🎵</p><p>Press "Draw Card" to start</p></div>';
+    '<div class="empty-state">' +
+      '<p class="empty-icon">🎵</p>' +
+      '<p>Press "Draw Card" to start</p>' +
+      '<p style="margin-top: 16px; font-size: 0.85rem; color: var(--text-muted);">Only hearing previews? <a href="#" onclick="openSpotifyLogin(); return false;" style="color: var(--accent-secondary);">Login to Spotify</a></p>' +
+    '</div>';
 
   document.getElementById("drawBtn").classList.remove("hidden");
   document.getElementById("revealBtn").classList.add("hidden");
   document.getElementById("nextBtn").classList.add("hidden");
 
-  // Desktop only: create the embed controller
-  if (!isMobile) {
-    const container = document.getElementById("embedContainer");
-    if (container && IFrameAPI) {
-      IFrameAPI.createController(container, {
-        uri: `spotify:track:${songs[0].id}`,
-        height: 152,
-        width: '100%'
-      }, (controller) => {
-        embedController = controller;
-      });
-    }
+  // Create the embed controller
+  const container = document.getElementById("embedContainer");
+  if (container && IFrameAPI) {
+    IFrameAPI.createController(container, {
+      uri: `spotify:track:${songs[0].id}`,
+      height: 152,
+      width: '100%'
+    }, (controller) => {
+      embedController = controller;
+    });
   }
 }
 
@@ -159,8 +152,8 @@ function drawCard() {
 
   document.getElementById("playedCount").textContent = songIndex;
 
-  // Desktop: autoplay
-  if (!isMobile && embedController) {
+  // Autoplay
+  if (embedController) {
     try {
       embedController.play();
       isPlaying = true;
@@ -196,8 +189,8 @@ function nextSong() {
 
   document.getElementById("playedCount").textContent = songIndex;
 
-  // Desktop: load new track and autoplay
-  if (!isMobile && embedController) {
+  // Load new track and autoplay
+  if (embedController) {
     try {
       embedController.loadUri(`spotify:track:${currentSong.id}`);
       embedController.play();
