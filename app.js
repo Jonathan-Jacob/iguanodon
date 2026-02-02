@@ -2,6 +2,7 @@ let songs = [];
 let songIndex = 0;
 let currentSong = null;
 let isPlaying = false;
+let isLoading = false;
 let embedController = null;
 let IFrameAPI = null;
 let hasFullTracks = false;
@@ -62,7 +63,11 @@ function togglePlay() {
 function updatePlayBtn() {
   const btn = document.getElementById("playPauseBtn");
   if (btn) {
-    btn.innerHTML = isPlaying ? '⏸️ Pause' : '▶️ Play';
+    if (isLoading) {
+      btn.innerHTML = '⏳ Loading...';
+    } else {
+      btn.innerHTML = isPlaying ? '⏸️ Pause' : '▶️ Play';
+    }
   }
 }
 
@@ -71,6 +76,7 @@ function updateCardContent(showGuessing) {
   if (!cardContent) return;
 
   if (showGuessing) {
+    let btnText = isLoading ? '⏳ Loading...' : (isPlaying ? '⏸️ Pause' : '▶️ Play');
     cardContent.innerHTML =
       '<div class="card-guessing">' +
         '<div class="card-content">' +
@@ -78,10 +84,11 @@ function updateCardContent(showGuessing) {
           '<p class="guessing-title">Ready!</p>' +
           '<p class="guessing-hint">Press Reveal to see the answer</p>' +
         '</div>' +
-        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + (isPlaying ? '⏸️ Pause' : '▶️ Play') + '</button>' +
+        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + btnText + '</button>' +
       '</div>';
   } else {
     const escape = t => { const d = document.createElement("div"); d.textContent = t; return d.innerHTML; };
+    let btnText = isLoading ? '⏳ Loading...' : (isPlaying ? '⏸️ Pause' : '▶️ Play');
     cardContent.innerHTML =
       '<div class="card-answer">' +
         '<div class="card-content">' +
@@ -90,7 +97,7 @@ function updateCardContent(showGuessing) {
           '<div class="song-artist">' + escape(currentSong.artist) + '</div>' +
           '<div class="song-genre">' + currentSong.genre + '</div>' +
         '</div>' +
-        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + (isPlaying ? '⏸️ Pause' : '▶️ Play') + '</button>' +
+        '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + btnText + '</button>' +
       '</div>';
   }
 }
@@ -134,6 +141,11 @@ function selectSet(set) {
     }, (controller) => {
       embedController = controller;
       controller.addListener('playback_update', (e) => {
+        // Track loading/buffering state
+        if (e.data.isBuffering !== isLoading) {
+          isLoading = e.data.isBuffering;
+          updatePlayBtn();
+        }
         // Check track duration to detect if user has full tracks or just previews
         if (e.data.duration > 35000 && !hasFullTracks) {
           // Duration > 35s means full track, not preview
@@ -221,6 +233,7 @@ function nextSong() {
   // Load new track, Desktop: autoplay, Mobile: start paused
   if (embedController) {
     try {
+      isLoading = true;
       embedController.loadUri(`spotify:track:${currentSong.id}`);
       if (isMobile) {
         embedController.pause();
@@ -232,6 +245,7 @@ function nextSong() {
     } catch (e) {
       console.error('Load/play error:', e);
       isPlaying = false;
+      isLoading = false;
     }
   } else {
     isPlaying = false;
