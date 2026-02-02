@@ -6,6 +6,8 @@ let embedController = null;
 let IFrameAPI = null;
 let hasFullTracks = false;
 
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
 const bingoColors = ['bingo-green', 'bingo-yellow', 'bingo-pink', 'bingo-blue', 'bingo-purple'];
 
 function applyBingoColor() {
@@ -165,11 +167,16 @@ function drawCard() {
 
   document.getElementById("playedCount").textContent = songIndex;
 
-  // Autoplay
+  // Desktop: autoplay, Mobile: start paused
   if (embedController) {
     try {
-      embedController.play();
-      isPlaying = true;
+      if (isMobile) {
+        embedController.pause();
+        isPlaying = false;
+      } else {
+        embedController.play();
+        isPlaying = true;
+      }
     } catch (e) {
       console.error('Playback error:', e);
       isPlaying = false;
@@ -202,12 +209,17 @@ function nextSong() {
 
   document.getElementById("playedCount").textContent = songIndex;
 
-  // Load new track and autoplay
+  // Load new track, Desktop: autoplay, Mobile: start paused
   if (embedController) {
     try {
       embedController.loadUri(`spotify:track:${currentSong.id}`);
-      embedController.play();
-      isPlaying = true;
+      if (isMobile) {
+        embedController.pause();
+        isPlaying = false;
+      } else {
+        embedController.play();
+        isPlaying = true;
+      }
     } catch (e) {
       console.error('Load/play error:', e);
       isPlaying = false;
