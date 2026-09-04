@@ -13,6 +13,13 @@ let activeSet = null; // The set that currently has music playing
 
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 const bingoColors = ['bingo-green', 'bingo-yellow', 'bingo-pink', 'bingo-blue', 'bingo-purple'];
+const guessByColor = {
+  'bingo-green': 'Guess the song title',
+  'bingo-yellow': 'Guess the artist',
+  'bingo-purple': 'Guess the decade',
+  'bingo-blue': 'Guess the year ±3',
+  'bingo-pink': 'Guess the year'
+};
 let currentBingoColor = null;
 
 // Mini player elements
@@ -74,6 +81,28 @@ window.onSpotifyIframeApiReady = (api) => {
 
 document.querySelectorAll(".set-btn").forEach(btn => {
   btn.addEventListener("click", () => selectSet(btn.dataset.set));
+});
+
+document.querySelectorAll(".set-btn[data-set]").forEach(btn => {
+  btn.addEventListener("pointerenter", () => {
+    btn.classList.add("hot");
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (btn.matches(":hover")) btn.classList.add("glow");
+      });
+    });
+  });
+  btn.addEventListener("pointerleave", () => {
+    if (!btn.classList.contains("glow")) {
+      btn.classList.remove("hot");
+      return;
+    }
+    btn.classList.remove("glow");
+  });
+  btn.addEventListener("transitionend", e => {
+    if (e.propertyName !== "opacity") return;
+    if (!btn.classList.contains("glow")) btn.classList.remove("hot");
+  });
 });
 document.getElementById("drawBtn").addEventListener("click", drawCard);
 document.getElementById("revealBtn").addEventListener("click", revealSong);
@@ -207,7 +236,7 @@ function updateCardContent(showGuessing) {
       '<div class="card-guessing">' +
         '<div class="card-content">' +
           '<div class="guessing-icon">🎵</div>' +
-          '<p class="guessing-title">Ready!</p>' +
+          '<p class="guessing-title">' + (guessByColor[currentBingoColor] || 'Guess') + '</p>' +
           '<p class="guessing-hint">Press Reveal to see the answer</p>' +
         '</div>' +
         '<button class="play-btn" id="playPauseBtn" onclick="togglePlay()">' + (isActuallyPlaying() ? '⏸️ Pause' : '▶️ Play') + '</button>' +

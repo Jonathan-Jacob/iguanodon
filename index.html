@@ -37,7 +37,7 @@
   font-display: swap;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: inherit; }
-html { background: #0f0a1a; }
+html { background-color: #0f0a1a; }
 :root {
   --bg-dark: #0f0a1a;
   --bg-card: #1e1432;
@@ -57,10 +57,17 @@ html { background: #0f0a1a; }
 }
 body {
   font-family: 'Outfit', sans-serif;
-  background: linear-gradient(145deg, #0f0a1a 0%, #1a0a2e 50%, #0a1a2e 100%);
-  background-attachment: fixed;
+  background: transparent;
   color: var(--text-primary);
   min-height: 100vh;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(145deg, #0f0a1a 0%, #1a0a2e 50%, #0a1a2e 100%);
+  pointer-events: none;
 }
 .app {
   max-width: 500px;
@@ -95,6 +102,41 @@ body {
   letter-spacing: 0.15em;
 }
 .set-buttons { display: flex; flex-direction: column; gap: 12px; }
+.how-to-play {
+  margin-top: 24px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.how-to-play h3 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-top: 32px;
+  margin-bottom: 16px;
+}
+.how-to-play p { margin-bottom: 12px; }
+.how-to-colors {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+  margin: 0 auto 12px;
+}
+.how-to-colors li { display: flex; align-items: center; gap: 8px; }
+.how-to-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.how-to-dot.dot-green { background: #39ff14; }
+.how-to-dot.dot-yellow { background: #ffff00; }
+.how-to-dot.dot-purple { background: #bf00ff; }
+.how-to-dot.dot-blue { background: #00bfff; }
+.how-to-dot.dot-pink { background: #ff1493; }
 .set-btn {
   background: var(--bg-card);
   border: 2px solid transparent;
@@ -102,7 +144,7 @@ body {
   padding: 20px 24px;
   cursor: pointer;
   text-align: left;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto auto;
@@ -115,20 +157,37 @@ body {
   position: absolute;
   inset: -2px;
   border-radius: calc(var(--radius) + 2px);
-  background: linear-gradient(135deg, #ff6b6b33, #ffd93d33, #6bcb7733, #4d96ff33, #e040fb33);
-  z-index: -1;
-  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #e040fb);
+  padding: 2px;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
 }
-.set-btn:hover {
+.set-btn::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius) + 2px);
+  background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #e040fb);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.set-btn.hot {
+  z-index: 0;
   background: var(--bg-card-hover);
   transform: translateY(-3px);
   box-shadow: 0 10px 40px rgba(224, 64, 251, 0.3);
 }
-.set-btn:hover::before {
-  background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff, #e040fb);
-}
-.set-btn:hover .set-name,
-.set-btn:hover .set-desc {
+.set-btn.hot::before,
+.set-btn.glow::after { opacity: 1; }
+.set-btn.hot .set-name,
+.set-btn.hot .set-desc {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 .set-icon { font-size: 2.5rem; grid-row: span 2; display: flex; align-items: center; filter: drop-shadow(0 0 10px rgba(255, 217, 61, 0.4)); }
@@ -283,6 +342,7 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 6px;
+  line-height: 1.2;
 }
 .guessing-hint {
   font-size: 1rem;
@@ -349,7 +409,8 @@ body {
   border: 2px solid transparent;
   box-shadow: inset 0 0 0 2px #ffd93d44;
 }
-.bingo-btn::before { display: none; }
+.bingo-btn::before,
+.bingo-btn::after { display: none; }
 .bingo-btn:hover {
   animation: bingo-glow 1.5s ease-in-out infinite;
   box-shadow: inset 0 0 0 2px #ffd93d, 0 0 20px rgba(255, 217, 61, 0.3);
@@ -433,7 +494,7 @@ iframe {
 }
 .footer {
   margin-top: auto;
-  padding-top: 24px;
+  padding-top: 48px;
   text-align: center;
   color: var(--text-muted);
   font-size: 0.8rem;
@@ -774,7 +835,20 @@ iframe {
           <span class="set-desc">Track your answers on a card</span>
         </button>
       </div>
-      <p style="margin-top: 24px; font-size: 0.85rem; color: var(--text-muted); text-align: center; max-width: 300px; margin-left: auto; margin-right: auto; line-height: 1.5;">Songs play as 30-second snippets. Full tracks are available on desktop when signed in to Spotify Premium.</p>
+      <div class="how-to-play">
+        <h3>How to play</h3>
+        <p>Everyone needs a device. A separate desktop signed in to Spotify is the best song player. A player's device can be the master, but it's not ideal.</p>
+        <p>Guess what the glow color asks:</p>
+        <ul class="how-to-colors">
+          <li><span class="how-to-dot dot-green"></span> song title</li>
+          <li><span class="how-to-dot dot-yellow"></span> artist</li>
+          <li><span class="how-to-dot dot-purple"></span> decade</li>
+          <li><span class="how-to-dot dot-blue"></span> year ±3</li>
+          <li><span class="how-to-dot dot-pink"></span> year</li>
+        </ul>
+        <p>Write your guess before reveal. If you were right, mark a tile of that color. First bingo wins.</p>
+        <p>Songs play as 30-second snippets. Full tracks are available on desktop when signed in to Spotify Premium.</p>
+      </div>
     </section>
 
     <!-- Bingo Card Section -->
@@ -880,7 +954,7 @@ iframe {
   </div>
   <script src="https://open.spotify.com/embed/iframe-api/v1"></script>
   <script src="songs.js?v=20"></script>
-  <script src="app.js?v=57"></script>
+  <script src="app.js?v=59"></script>
   <script src="bingo.js?v=20"></script>
 </body>
 </html>
