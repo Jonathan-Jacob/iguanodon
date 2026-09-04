@@ -85,10 +85,11 @@ document.querySelectorAll(".set-btn").forEach(btn => {
 
 document.querySelectorAll(".set-btn[data-set]").forEach(btn => {
   btn.addEventListener("pointerenter", () => {
+    if (btn.classList.contains("playing")) return;
     btn.classList.add("hot");
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        if (btn.matches(":hover")) btn.classList.add("glow");
+        if (btn.matches(":hover") && !btn.classList.contains("playing")) btn.classList.add("glow");
       });
     });
   });
@@ -174,7 +175,7 @@ function updatePlayingIndicator() {
   const glowColors = ['glow-green', 'glow-yellow', 'glow-pink', 'glow-blue', 'glow-purple'];
   // Remove playing and glow classes from all set buttons
   document.querySelectorAll('.set-btn[data-set]').forEach(btn => {
-    btn.classList.remove('playing', ...glowColors);
+    btn.classList.remove('playing', 'hot', 'glow', ...glowColors);
   });
   // Add playing class and glow color to active set button if music is playing
   if (activeSet && embedController) {
